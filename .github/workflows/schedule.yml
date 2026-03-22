@@ -38,3 +38,12 @@ jobs:
         name: screenshots
         path: "*.png"
         retention-days: 5
+        
+    - name: Keepalive
+      run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          date -u > .keepalive
+          git add .keepalive
+          git commit -m "chore: keepalive $(date -u +%Y-%m-%d)"
+          git push
