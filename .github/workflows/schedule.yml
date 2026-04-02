@@ -38,19 +38,11 @@ jobs:
         name: screenshots
         path: "*.png"
         retention-days: 5
-        
-    - name: Keepalive
-      run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          date -u > .keepalive
-          git add .keepalive
-          git commit -m "chore: keepalive $(date -u +%Y-%m-%d)"
-          git push
+
     - name: 计算下次运行时间并更新 cron
       run: |
-          # 当前时间 + 32小时
-          NEXT=$(date -u -d '+32 hours' '+%M %H %d %m')
+          # 当前时间 + 36小时
+          NEXT=$(date -u -d '+36 hours' '+%M %H %d %m')
           MINUTE=$(echo $NEXT | awk '{print $1}')
           HOUR=$(echo $NEXT | awk '{print $2}')
           DAY=$(echo $NEXT | awk '{print $3}')
