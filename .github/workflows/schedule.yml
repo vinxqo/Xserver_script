@@ -5,11 +5,12 @@ on:
     - cron: '0 0 * * *'  # 初始值，会被自动覆盖
   workflow_dispatch:
 
+permissions:
+  contents: write   # ✅ 正确
+
 jobs:
   extend-server:
     runs-on: ubuntu-latest
-    permissions:
-     contents: write
 
     steps:
     - name: Checkout repository
