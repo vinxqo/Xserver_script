@@ -52,12 +52,12 @@ jobs:
           echo "下次运行: $NEW_CRON"
 
           # 替换 yml 中的 cron 行
-          sed -i "s|cron: '.*'|cron: '${NEW_CRON}'|" .github/workflows/keep-alive.yml
+          sed -i "s|cron: '.*'|cron: '${NEW_CRON}'|" .github/workflows/schedule.yml
 
     - name: 提交更新
       run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .github/workflows/keep-alive.yml
+          git add .github/workflows/schedule.yml
           git commit -m "chore: 更新下次保活时间 [skip ci]"
           git push
