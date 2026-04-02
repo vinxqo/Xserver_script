@@ -58,13 +58,18 @@ jobs:
           sed -i "s|cron: '.*'|cron: '${NEW_CRON}'|" .github/workflows/schedule.yml
 
     - name: 提交更新
+      env:
+        TOKEN: ${{ secrets.PAT_TOKEN }}
       run: |
+          # 检查 token 是否为空
+          if [ -z "$TOKEN" ]; then
+            echo "❌ PAT_TOKEN 为空！请检查 Secret 是否配置正确"
+            exit 1
+          fi
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # 用 PAT 覆盖 remote URL
-          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}
-          
+          git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
           git add .github/workflows/
           git commit -m "chore: 更新下次保活时间 [skip ci]"
           git push
