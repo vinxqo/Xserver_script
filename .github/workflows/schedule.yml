@@ -1,37 +1,8 @@
+name: Keep Alive
+
 on:
   schedule:
-    # ===== 调试/启动阶段：针对 3/31 21:00 创建进行对时 =====
-    # 1. 第一次触发：4月2日 13:00 (距创建 40h) —— 避开 4/1 凌晨的冲突
-    - cron: '0 13 2 * *'   
-    
-    # 2. 第二次触发：4月4日 01:00 (距上次 36h) —— 加密调试点 A
-    - cron: '0 1 4 * *'    
-    
-    # 3. 第三次触发：4月5日 13:00 (距上次 36h) —— 加密调试点 B
-    - cron: '0 13 5 * *'   
-
-    # ===== 标准循环阶段：接回你原有的 37h/38h 节奏 =====
-    # 从 4月7日开始，完全进入你之前的标准 37.5h 步长轨道
-    - cron: '0 4 7 * *'    # Day 7  04:00 (+39h，略微拉开间距进入大循环)
-    - cron: '0 18 8 * *'   # Day 8  18:00 (+38h)
-    - cron: '0 7 10 * *'   # Day 10 07:00 (+37h)
-    - cron: '0 20 11 * *'  # Day 11 20:00 (+37h)
-    - cron: '0 9 13 * *'   # Day 13 09:00 (+37h)
-    - cron: '0 22 14 * *'  # Day 14 22:00 (+37h)
-    - cron: '0 12 16 * *'  # Day 16 12:00 (+38h)
-    - cron: '0 1 18 * *'   # Day 18 01:00 (+37h)
-    - cron: '0 14 19 * *'  # Day 19 14:00 (+37h)
-    - cron: '0 3 21 * *'   # Day 21 03:00 (+37h)
-    - cron: '0 16 22 * *'  # Day 22 16:00 (+37h)
-    - cron: '0 6 24 * *'   # Day 24 06:00 (+38h)
-    - cron: '0 19 25 * *'  # Day 25 19:00 (+37h)
-    - cron: '0 8 27 * *'   # Day 27 08:00 (+37h)
-    - cron: '0 21 28 * *'  # Day 28 21:00 (+37h)
-    - cron: '0 10 30 * *'  # Day 30 10:00 (+37h)
-    
-    # ===== 月底/跨月闭环点 =====
-    - cron: '0 0 1 * *'    # Day 1  00:00 (+38h) —— 确保下月 1 号接力成功
-    
+    - cron: '0 0 * * *'  # 初始值，会被自动覆盖
   workflow_dispatch:
 
 jobs:
@@ -75,4 +46,26 @@ jobs:
           date -u > .keepalive
           git add .keepalive
           git commit -m "chore: keepalive $(date -u +%Y-%m-%d)"
+          git push
+    - name: 计算下次运行时间并更新 cron
+      run: |
+          # 当前时间 + 32小时
+          NEXT=$(date -u -d '+32 hours' '+%M %H %d %m')
+          MINUTE=$(echo $NEXT | awk '{print $1}')
+          HOUR=$(echo $NEXT | awk '{print $2}')
+          DAY=$(echo $NEXT | awk '{print $3}')
+          MONTH=$(echo $NEXT | awk '{print $4}')
+
+          NEW_CRON="${MINUTE} ${HOUR} ${DAY} ${MONTH} *"
+          echo "下次运行: $NEW_CRON"
+
+          # 替换 yml 中的 cron 行
+          sed -i "s|cron: '.*'|cron: '${NEW_CRON}'|" .github/workflows/keep-alive.yml
+
+    - name: 提交更新
+      run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/keep-alive.yml
+          git commit -m "chore: 更新下次保活时间 [skip ci]"
           git push
