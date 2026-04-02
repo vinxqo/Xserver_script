@@ -58,11 +58,13 @@ jobs:
           sed -i "s|cron: '.*'|cron: '${NEW_CRON}'|" .github/workflows/schedule.yml
 
     - name: 提交更新
-      env:        
-        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}  # 改用 PAT
       run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .github/workflows/schedule.yml
+          
+          # 用 PAT 覆盖 remote URL
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}
+          
+          git add .github/workflows/
           git commit -m "chore: 更新下次保活时间 [skip ci]"
           git push
