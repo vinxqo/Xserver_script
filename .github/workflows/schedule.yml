@@ -43,8 +43,6 @@ jobs:
         retention-days: 5
 
     - name: 计算下次运行时间并更新 cron
-      env:        
-        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}  # 改用 PAT
       run: |
           # 当前时间 + 36小时
           NEXT=$(date -u -d '+36 hours' '+%M %H %d %m')
@@ -60,6 +58,8 @@ jobs:
           sed -i "s|cron: '.*'|cron: '${NEW_CRON}'|" .github/workflows/schedule.yml
 
     - name: 提交更新
+      env:        
+        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}  # 改用 PAT
       run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
