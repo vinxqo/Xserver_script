@@ -43,9 +43,9 @@ jobs:
         retention-days: 5
 
     - name: 计算下次运行时间并更新 cron
+      env:        
+        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}  # 改用 PAT
       run: |
-          env:        
-            GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}  # 改用 PAT
           # 当前时间 + 36小时
           NEXT=$(date -u -d '+36 hours' '+%M %H %d %m')
           MINUTE=$(echo $NEXT | awk '{print $1}')
