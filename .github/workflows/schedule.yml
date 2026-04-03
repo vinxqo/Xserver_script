@@ -1,12 +1,13 @@
-name: Keep Alive
+name: XServer Extend Schedule
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 初始值，会被自动覆盖
+    - cron: '0 0 * * 1'   # 周一 00:00
+    - cron: '0 18 * * 2'  # 周二 18:00  +42h
+    - cron: '0 12 * * 4'  # 周四 12:00  +42h
+    - cron: '0 6 * * 6'   # 周六 06:00  +42h
+    # 周六 06:00 → 下周一 00:00 = +42h ✓
   workflow_dispatch:
-
-permissions:
-  contents: write   # ✅ 正确
 
 jobs:
   extend-server:
@@ -42,34 +43,11 @@ jobs:
         path: "*.png"
         retention-days: 5
 
-    - name: 计算下次运行时间并更新 cron
+    - name: Keepalive
       run: |
-          # 当前时间 + 36小时
-          NEXT=$(date -u -d '+36 hours' '+%M %H %d %m')
-          MINUTE=$(echo $NEXT | awk '{print $1}')
-          HOUR=$(echo $NEXT | awk '{print $2}')
-          DAY=$(echo $NEXT | awk '{print $3}')
-          MONTH=$(echo $NEXT | awk '{print $4}')
-
-          NEW_CRON="${MINUTE} ${HOUR} ${DAY} ${MONTH} *"
-          echo "下次运行: $NEW_CRON"
-
-          # 替换 yml 中的 cron 行
-          sed -i "s|cron: '.*'|cron: '${NEW_CRON}'|" .github/workflows/schedule.yml
-
-    - name: 提交更新
-      env:
-        TOKEN: ${{ secrets.PAT_TOKEN }}
-      run: |
-          # 检查 token 是否为空
-          if [ -z "$TOKEN" ]; then
-            echo "❌ PAT_TOKEN 为空！请检查 Secret 是否配置正确"
-            exit 1
-          fi
-
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
-          git add .github/workflows/
-          git commit -m "chore: 更新下次保活时间 [skip ci]"
+          date -u > .keepalive
+          git add .keepalive
+          git commit -m "chore: keepalive $(date -u +%Y-%m-%d)"
           git push
